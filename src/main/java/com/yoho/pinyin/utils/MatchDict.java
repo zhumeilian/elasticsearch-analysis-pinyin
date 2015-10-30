@@ -27,12 +27,11 @@ public class MatchDict {
   private static final Set<PinyinDict> dictSet = new HashSet<PinyinDict>();
   
   //初始化词典
-  public static void init() {
-    String fileName = "pinyin/multitoneDict.txt";
+  public static void init(File file) {
 
     InputStream input;
     try {
-      input = new FileInputStream(new File(fileName));
+      input = new FileInputStream(file);
       BufferedReader bufferReader = new BufferedReader(new InputStreamReader(input, "UTF-8"));
       String line;
       String[] strs;
@@ -69,7 +68,8 @@ public class MatchDict {
   
   public static void main(String[] args) {
     MatchDict matchDict = new MatchDict();
-    matchDict.init();
+      File file = new File("pinyin/multitoneDict.txt");
+    matchDict.init(file);
     PinyinDict pinyinDict = matchDict.getPinyinDict("传感器");
     if (pinyinDict != null) {
       System.out.println(pinyinDict.getDict() + " " + pinyinDict.getPinyin() + " " + pinyinDict.getShortPinyin());

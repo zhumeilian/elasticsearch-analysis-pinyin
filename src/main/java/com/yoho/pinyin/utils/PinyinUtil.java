@@ -6,6 +6,7 @@ import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
 import net.sourceforge.pinyin4j.format.HanyuPinyinToneType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinVCharType;
 import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombination;
+import org.elasticsearch.index.config.PinyinElasticConfigurator;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -30,14 +31,13 @@ import java.util.*;
 
 public class PinyinUtil {
   private static final HanyuPinyinOutputFormat format;
-  private static final int HANZI_SIZE = 11;
+  private static final int HANZI_SIZE = 50;
   static {
     // 初始化读音format
     format = new HanyuPinyinOutputFormat();
     format.setCaseType(HanyuPinyinCaseType.LOWERCASE);
     format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);
     format.setVCharType(HanyuPinyinVCharType.WITH_V);
-    MatchDict.init();
   }
   
   //将所有多音字组合
@@ -135,14 +135,7 @@ public class PinyinUtil {
       } else {
         //查找到是哪个多音字，然后找找是否有默认读音
         dict = MultitoneUtils.hasMultitone(subToken);
-        if (token.length() <= HANZI_SIZE && token.contains("传") && (token.indexOf("传")+1) == token.length()) {
-          //首先词的长度小于6，同时“传”是最后一个字
-          pinyinTemp = transToPinyinNoMultitone(token, token.substring(0, token.length() - 1));
-          pinyinList.add(pinyinTemp.getPinyin() + "zhuan");
-          pinyinList.add(pinyinTemp.getShortPinyin() + "z");
-        } else {
-          pinyinList = getPinyins(subToken);
-        }
+        pinyinList = getPinyins(subToken);
       }
     } else {
       pinyins = transToPinyinNoMultitone(token, subToken);

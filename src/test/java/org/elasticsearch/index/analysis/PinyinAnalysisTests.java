@@ -19,6 +19,7 @@
 
 package org.elasticsearch.index.analysis;
 
+import com.yoho.pinyin.utils.MatchDict;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.core.KeywordAnalyzer;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
@@ -37,6 +38,7 @@ import org.hamcrest.MatcherAssert;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -95,6 +97,7 @@ public class PinyinAnalysisTests {
         sr = new StringReader("刘德华");
         analyzer = new KeywordAnalyzer();
         filter = new PinyinTokenFilter(analyzer.tokenStream("f",sr),"","only");
+        filter.reset();
         pinyin.clear();
         while (filter.incrementToken())
         {
@@ -107,16 +110,17 @@ public class PinyinAnalysisTests {
 
     @Test
     public void TestTokenizer() throws IOException {
-        String[] s = {"刘 德华", "A1劉德華", "刘德华A1", "刘德华A2","讲话频率小，不能发高音","T波低平或倒置","β-氨基酸尿","长袖"};
-//        String[] s = {"长袖"};
+//        String[] s = {"刘 德华", "A1劉德華", "刘德华A1", "刘德华A2","讲话频率小，不能发高音","T波低平或倒置","β-氨基酸尿","长袖"};
+        String[] s = {"st roller 'human acting like apes'系列t恤"};
+        MatchDict.init(new File("pinyin/multitoneDict.txt"));
         for (String value : s) {
             System.out.println(value);
             StringReader sr = new StringReader(value);
 
 //            PinyinTokenizer tokenizer = new PinyinTokenizer(sr,"","none");
-//            PinyinTokenizer tokenizer = new PinyinTokenizer(sr, "", "only");
+            PinyinTokenizer tokenizer = new PinyinTokenizer(sr, "", "only");
 //            PinyinTokenizer tokenizer = new PinyinTokenizer(sr," ","prefix");
-              PinyinTokenizer tokenizer = new PinyinTokenizer(sr,"","append");
+//              PinyinTokenizer tokenizer = new PinyinTokenizer(sr,"","append");
 //            PinyinAbbreviationsTokenizer tokenizer = new PinyinAbbreviationsTokenizer(sr);
             tokenizer.reset();
             boolean hasnext = tokenizer.incrementToken();

@@ -5,6 +5,7 @@ import org.elasticsearch.common.inject.Inject;
 import org.elasticsearch.common.inject.assistedinject.Assisted;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.index.Index;
+import org.elasticsearch.index.config.PinyinElasticConfigurator;
 import org.elasticsearch.index.settings.IndexSettings;
 
 import java.io.Reader;
@@ -20,6 +21,7 @@ public class PinyinTokenizerFactory extends AbstractTokenizerFactory {
         super(index, indexSettings, name, settings);
          first_letter = settings.get("first_letter", "none");
          padding_char = settings.get("padding_char", "");
+        PinyinElasticConfigurator.init(indexSettings, settings);
     }
 
     @Override
