@@ -1,5 +1,6 @@
 package org.elasticsearch.index.analysis;
 
+import com.yoho.pinyin.utils.PinyinUtil;
 import net.sourceforge.pinyin4j.PinyinHelper;
 import net.sourceforge.pinyin4j.format.HanyuPinyinCaseType;
 import net.sourceforge.pinyin4j.format.HanyuPinyinOutputFormat;
@@ -12,6 +13,7 @@ import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
 
 import java.io.IOException;
 import java.io.Reader;
+import java.util.ArrayList;
 
 /**
  * Created by IntelliJ IDEA.
@@ -63,54 +65,79 @@ public class PinyinTokenizer extends Tokenizer {
             termAtt.setLength(upto);
             String str = termAtt.toString();
             termAtt.setEmpty();
-            StringBuilder stringBuilder = new StringBuilder();
-            StringBuilder firstLetters = new StringBuilder();
-            for (int i = 0; i < str.length(); i++) {
-                char c = str.charAt(i);
-                if (c < 128) {
-                    stringBuilder.append(c);
-                } else {
-                    try {
-                        String[] strs = PinyinHelper.toHanyuPinyinStringArray(c, format);
-                        if (strs != null) {
-                            //get first result by default
-                            String first_value = strs[0];
-                            //TODO more than one pinyin
-                            stringBuilder.append(first_value);
-                            if (this.padding_char.length() > 0) {
-                                stringBuilder.append(this.padding_char);
-                            }
-                            firstLetters.append(first_value.charAt(0));
+//            StringBuilder stringBuilder = new StringBuilder();
+//            StringBuilder firstLetters = new StringBuilder();
+//            for (int i = 0; i < str.length(); i++) {
+//                char c = str.charAt(i);
+//                if (c < 128) {
+//                    stringBuilder.append(c);
+//                } else {
+//                    try {
+//                        String[] strs = PinyinHelper.toHanyuPinyinStringArray(c, format);
+//                        if (strs != null) {
+//                            //get first result by default
+//                            String first_value = strs[0];
+//                            //TODO more than one pinyin
+//                            stringBuilder.append(first_value);
+//                            if (this.padding_char.length() > 0) {
+//                                stringBuilder.append(this.padding_char);
+//                            }
+//                            firstLetters.append(first_value.charAt(0));
+//
+//                        }
+//                    } catch (BadHanyuPinyinOutputFormatCombination badHanyuPinyinOutputFormatCombination) {
+//                        badHanyuPinyinOutputFormatCombination.printStackTrace();
+//                    }
+//                }
+//            }
+//
+//            //let's join them
+//            if (first_letter.equals("prefix")) {
+//                termAtt.append(firstLetters.toString());
+//                if (this.padding_char.length() > 0) {
+//                    termAtt.append(this.padding_char); //TODO splitter
+//                }
+//                termAtt.append(stringBuilder.toString());
+//            } else if (first_letter.equals("append")) {
+//                termAtt.append(stringBuilder.toString());
+//                if (this.padding_char.length() > 0) {
+//                    if(!stringBuilder.toString().endsWith(this.padding_char))
+//                    {
+//                        termAtt.append(this.padding_char);
+//                    }
+//                }
+//                termAtt.append(firstLetters.toString());
+//            } else if (first_letter.equals("none")) {
+//                termAtt.append(stringBuilder.toString());
+//            } else if (first_letter.equals("only")) {
+//                termAtt.append(firstLetters.toString());
+//            }
 
-                        }
-                    } catch (BadHanyuPinyinOutputFormatCombination badHanyuPinyinOutputFormatCombination) {
-                        badHanyuPinyinOutputFormatCombination.printStackTrace();
-                    }
-                }
-            }
+            ArrayList<String> list = PinyinUtil.transToPinyin(str);
 
             //let's join them
-            if (first_letter.equals("prefix")) {
-                termAtt.append(firstLetters.toString());
-                if (this.padding_char.length() > 0) {
-                    termAtt.append(this.padding_char); //TODO splitter
-                }
-                termAtt.append(stringBuilder.toString());
-            } else if (first_letter.equals("append")) {
-                termAtt.append(stringBuilder.toString());
-                if (this.padding_char.length() > 0) {
-                    if(!stringBuilder.toString().endsWith(this.padding_char))
-                    {
-                        termAtt.append(this.padding_char);
+            if (list.size() == 2) {
+                if (first_letter.equals("prefix")) {
+                    termAtt.append(list.get(1));
+                    if (this.padding_char.length() > 0) {
+                        termAtt.append(this.padding_char); //TODO splitter
                     }
+                    termAtt.append(list.get(0));
+                } else if (first_letter.equals("append")) {
+                    termAtt.append(list.get(0));
+                    if (this.padding_char.length() > 0) {
+                        if(!list.get(0).endsWith(this.padding_char))
+                        {
+                            termAtt.append(this.padding_char);
+                        }
+                    }
+                    termAtt.append(list.get(1));
+                } else if (first_letter.equals("none")) {
+                    termAtt.append(list.get(0));
+                } else if (first_letter.equals("only")) {
+                    termAtt.append(list.get(1));
                 }
-                termAtt.append(firstLetters.toString());
-            } else if (first_letter.equals("none")) {
-                termAtt.append(stringBuilder.toString());
-            } else if (first_letter.equals("only")) {
-                termAtt.append(firstLetters.toString());
             }
-
 
             finalOffset = correctOffset(upto);
             offsetAtt.setOffset(correctOffset(0), finalOffset);
